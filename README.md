@@ -62,6 +62,12 @@ cargo build --release
 | `--effort` | — | Thinking effort: `low`, `medium`, `high`, `max` |
 | `--max-turns` | `100` | Max agentic turns per request |
 
+> [!IMPORTANT]
+> ### 🤖 LLM Integration — OpenClaw Setup
+> Step-by-step guide for connecting this proxy to **OpenClaw** as an LLM provider — config, systemd service, model IDs, troubleshooting:
+>
+> **➜ [docs/SETUP.md](docs/SETUP.md)**
+
 ## Verify
 
 ```bash
@@ -71,12 +77,6 @@ curl -sN http://localhost:3456/v1/messages \
 ```
 
 Expected: SSE stream with `message_start` → `content_block_delta` → `message_stop`.
-
-> [!IMPORTANT]
-> ### OpenClaw Setup Guide
-> For detailed integration instructions — config, systemd service, model IDs, troubleshooting:
->
-> **[docs/SETUP.md](docs/SETUP.md)**
 
 ## Endpoints
 

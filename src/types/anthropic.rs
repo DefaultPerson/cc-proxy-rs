@@ -75,9 +75,7 @@ pub enum TypedContentBlock {
     Text { text: String },
 
     #[serde(rename = "image")]
-    Image {
-        source: Option<serde_json::Value>,
-    },
+    Image { source: Option<serde_json::Value> },
 
     #[serde(rename = "tool_use")]
     ToolUse {
@@ -173,12 +171,10 @@ impl Content {
                 .filter_map(|b| match b {
                     ContentBlock::Typed(typed) => match typed {
                         TypedContentBlock::Text { text } => Some(text.clone()),
-                        TypedContentBlock::ToolUse { id, name, input } => {
-                            Some(format!(
-                                "[Tool call: {name} (id: {id})]\n{}\n[End tool call]",
-                                serde_json::to_string_pretty(input).unwrap_or_default()
-                            ))
-                        }
+                        TypedContentBlock::ToolUse { id, name, input } => Some(format!(
+                            "[Tool call: {name} (id: {id})]\n{}\n[End tool call]",
+                            serde_json::to_string_pretty(input).unwrap_or_default()
+                        )),
                         TypedContentBlock::ToolResult {
                             tool_use_id,
                             content,
