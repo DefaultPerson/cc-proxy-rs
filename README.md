@@ -1,3 +1,4 @@
+[![Release](https://img.shields.io/github/v/release/DefaultPerson/claude-code-proxy-rs?color=success)](https://github.com/DefaultPerson/claude-code-proxy-rs/releases/latest)
 [![Rust](https://img.shields.io/badge/Rust-1.85+-f74c00?logo=rust&logoColor=white)](https://www.rust-lang.org/)
 [![Axum](https://img.shields.io/badge/Axum-0.8-blue)](https://github.com/tokio-rs/axum)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
@@ -40,15 +41,25 @@ Each request spawns a `claude -p --output-format stream-json` subprocess. The pr
 
 ## Quick start
 
+### From release (recommended)
+
+Download the latest binary from [Releases](https://github.com/DefaultPerson/claude-code-proxy-rs/releases/latest) and place it in your `$PATH`.
+
+### From source
+
 ```bash
 # Prerequisites: Claude Code CLI installed and authenticated
 npm i -g @anthropic-ai/claude-code && claude auth login
 
-# Build
+# Build & install
 cargo build --release
+cp target/release/claude-code-proxy ~/.local/bin/
+```
 
-# Run
-./target/release/claude-code-proxy --port 3456 --cwd ~ --embed-system-prompt
+### Run
+
+```bash
+claude-code-proxy --port 3456 --cwd ~ --embed-system-prompt
 ```
 
 > [!IMPORTANT]

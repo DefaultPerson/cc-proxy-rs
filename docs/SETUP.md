@@ -9,6 +9,18 @@ HTTP proxy that wraps Claude Code CLI as a subprocess, exposing it as Anthropic 
 
 ## Install
 
+### From release (recommended)
+
+Download the latest binary from [Releases](https://github.com/DefaultPerson/claude-code-proxy-rs/releases/latest):
+
+```bash
+# Example for Linux x86_64
+curl -L https://github.com/DefaultPerson/claude-code-proxy-rs/releases/latest/download/claude-code-proxy -o ~/.local/bin/claude-code-proxy
+chmod +x ~/.local/bin/claude-code-proxy
+```
+
+### From source
+
 ```bash
 cargo build --release
 cp target/release/claude-code-proxy ~/.local/bin/
