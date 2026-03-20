@@ -36,14 +36,6 @@ impl StreamState {
 /// An SSE event to send to the client: (event_name, json_data).
 pub type SseEvent = (String, String);
 
-/// Allowed event types to forward from CLI stream_event.
-const FORWARD_EVENT_TYPES: &[&str] = &[
-    "content_block_start",
-    "content_block_delta",
-    "content_block_stop",
-    "ping",
-];
-
 /// Convert a subprocess event into zero or more SSE events.
 pub fn cli_event_to_sse(event: &SubprocessEvent, state: &mut StreamState) -> Vec<SseEvent> {
     match event {
@@ -194,7 +186,7 @@ pub fn cli_event_to_sse(event: &SubprocessEvent, state: &mut StreamState) -> Vec
             // (known issue: CLI sometimes omits result — GitHub #8126),
             // emit proper SSE termination so the client doesn't hang.
             if state.sent_message_start {
-                let stop_reason = if *code == 0 { "end_turn" } else { "end_turn" };
+                let stop_reason = "end_turn";
                 let delta = json!({
                     "type": "message_delta",
                     "delta": { "stop_reason": stop_reason, "stop_sequence": null },

@@ -180,9 +180,7 @@ pub async fn chat_completions(
 
     // embed mode: system in text, no CLI flag, keep default 43K prompt
     // replace mode: system via --system-prompt, replaces 43K prompt
-    let system_prompt = if embed {
-        None
-    } else if system_parts.is_empty() {
+    let system_prompt = if embed || system_parts.is_empty() {
         None
     } else {
         Some(system_parts.join("\n"))
@@ -208,14 +206,14 @@ pub async fn chat_completions(
 }
 
 fn log_tools_warning(request_id: &str, request: &MessagesRequest) {
-    if let Some(ref tools) = request.tools {
-        if !tools.is_empty() {
-            warn!(
-                "[req={request_id}] Request contains {} tool definitions — \
+    if let Some(ref tools) = request.tools
+        && !tools.is_empty()
+    {
+        warn!(
+            "[req={request_id}] Request contains {} tool definitions — \
                  ignored (CLI uses built-in tools: Read, Edit, Bash, Grep, Glob, etc.)",
-                tools.len()
-            );
-        }
+            tools.len()
+        );
     }
 }
 
@@ -308,7 +306,9 @@ async fn handle_openai_streaming(
         let _ = bytes_tx.send(Ok(b":ok\n\n".to_vec())).await;
 
         let mut sent_role = false;
+        #[allow(unused_assignments)]
         let mut output_tokens: u64 = 0;
+        #[allow(unused_assignments)]
         let mut input_tokens: u64 = 0;
 
         while let Some(event) = sub_rx.recv().await {
@@ -318,35 +318,34 @@ async fn handle_openai_streaming(
                     payload,
                 } => {
                     // Only forward text_delta content (skip thinking, tool_use, etc.)
-                    if event_type == "content_block_delta" {
-                        if let Some(text) = payload
+                    if event_type == "content_block_delta"
+                        && let Some(text) = payload
                             .get("delta")
                             .and_then(|d| d.get("text"))
                             .and_then(|t| t.as_str())
-                        {
-                            // Build delta without role: null (omit key like OpenAI spec)
-                            let mut delta = serde_json::Map::new();
-                            if !sent_role {
-                                sent_role = true;
-                                delta.insert("role".to_string(), json!("assistant"));
-                            }
-                            delta.insert("content".to_string(), json!(text));
+                    {
+                        // Build delta without role: null (omit key like OpenAI spec)
+                        let mut delta = serde_json::Map::new();
+                        if !sent_role {
+                            sent_role = true;
+                            delta.insert("role".to_string(), json!("assistant"));
+                        }
+                        delta.insert("content".to_string(), json!(text));
 
-                            let chunk = json!({
-                                "id": format!("chatcmpl-{rid}"),
-                                "object": "chat.completion.chunk",
-                                "created": created,
-                                "model": model,
-                                "choices": [{
-                                    "index": 0,
-                                    "delta": delta,
-                                    "finish_reason": serde_json::Value::Null,
-                                }]
-                            });
-                            let bytes = format_openai_sse(&serde_json::to_string(&chunk).unwrap());
-                            if bytes_tx.send(Ok(bytes)).await.is_err() {
-                                return;
-                            }
+                        let chunk = json!({
+                            "id": format!("chatcmpl-{rid}"),
+                            "object": "chat.completion.chunk",
+                            "created": created,
+                            "model": model,
+                            "choices": [{
+                                "index": 0,
+                                "delta": delta,
+                                "finish_reason": serde_json::Value::Null,
+                            }]
+                        });
+                        let bytes = format_openai_sse(&serde_json::to_string(&chunk).unwrap());
+                        if bytes_tx.send(Ok(bytes)).await.is_err() {
+                            return;
                         }
                     }
                 }
@@ -356,25 +355,23 @@ async fn handle_openai_streaming(
 
                     // If no text was streamed (e.g. multi-turn tool use),
                     // send the final result text as one chunk
-                    if !sent_role {
-                        if let Some(ref text) = data.result {
-                            if !text.is_empty() {
-                                let chunk = json!({
-                                    "id": format!("chatcmpl-{rid}"),
-                                    "object": "chat.completion.chunk",
-                                    "created": created,
-                                    "model": model,
-                                    "choices": [{
-                                        "index": 0,
-                                        "delta": { "role": "assistant", "content": text },
-                                        "finish_reason": serde_json::Value::Null,
-                                    }]
-                                });
-                                let bytes =
-                                    format_openai_sse(&serde_json::to_string(&chunk).unwrap());
-                                let _ = bytes_tx.send(Ok(bytes)).await;
-                            }
-                        }
+                    if !sent_role
+                        && let Some(ref text) = data.result
+                        && !text.is_empty()
+                    {
+                        let chunk = json!({
+                            "id": format!("chatcmpl-{rid}"),
+                            "object": "chat.completion.chunk",
+                            "created": created,
+                            "model": model,
+                            "choices": [{
+                                "index": 0,
+                                "delta": { "role": "assistant", "content": text },
+                                "finish_reason": serde_json::Value::Null,
+                            }]
+                        });
+                        let bytes = format_openai_sse(&serde_json::to_string(&chunk).unwrap());
+                        let _ = bytes_tx.send(Ok(bytes)).await;
                     }
 
                     let done_chunk = json!({

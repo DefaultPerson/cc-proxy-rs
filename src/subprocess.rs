@@ -13,7 +13,11 @@ use crate::types::cli::{CliMessage, ResultMessage, Usage};
 #[derive(Debug)]
 pub enum SubprocessEvent {
     /// CLI init: session ID and model from `system/init`.
-    Init { session_id: String, model: String },
+    Init {
+        #[allow(dead_code)]
+        session_id: String,
+        model: String,
+    },
     /// Raw Anthropic streaming event from `stream_event.event`.
     /// `event_type` is the event name (e.g. "content_block_delta").
     /// `payload` is the raw JSON to emit as SSE data.
@@ -32,6 +36,7 @@ pub enum SubprocessEvent {
 }
 
 #[derive(Debug)]
+#[allow(dead_code)]
 pub struct ResultData {
     pub result: Option<String>,
     pub stop_reason: Option<String>,
@@ -265,11 +270,11 @@ fn process_line(line: &str, rid: &str) -> Vec<SubprocessEvent> {
 
     match msg {
         CliMessage::System(sys) => {
-            if sys.subtype.as_deref() == Some("init") {
-                if let (Some(session_id), Some(model)) = (sys.session_id, sys.model) {
-                    info!("[req={rid}] Init: model={model} session={session_id}");
-                    return vec![SubprocessEvent::Init { session_id, model }];
-                }
+            if sys.subtype.as_deref() == Some("init")
+                && let (Some(session_id), Some(model)) = (sys.session_id, sys.model)
+            {
+                info!("[req={rid}] Init: model={model} session={session_id}");
+                return vec![SubprocessEvent::Init { session_id, model }];
             }
             // Other system subtypes (api_retry, status, etc.) — skip
             debug!("[req={rid}] System subtype: {:?}", sys.subtype);

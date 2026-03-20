@@ -10,6 +10,7 @@ pub enum AppError {
     BadRequest(String),
 
     #[error("Internal error: {0}")]
+    #[allow(dead_code)]
     Internal(String),
 
     #[error("Subprocess error: {0}")]

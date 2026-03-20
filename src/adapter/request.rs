@@ -5,6 +5,7 @@ use crate::types::anthropic::MessagesRequest;
 
 /// Prepare subprocess options and the stdin prompt from an Anthropic request.
 pub struct ProxyConfig {
+    #[allow(dead_code)]
     pub max_turns: u32,
     pub replace_system_prompt: bool,
     pub effort: Option<String>,
@@ -23,10 +24,10 @@ pub fn prepare_subprocess(
         // Embed system prompt in prompt text with <system> tags.
         // Keeps Claude Code's default 43K system prompt intact.
         let mut prompt_parts = Vec::new();
-        if let Some(ref sys) = system_text {
-            if !sys.is_empty() {
-                prompt_parts.push(format!("<system>\n{sys}\n</system>"));
-            }
+        if let Some(ref sys) = system_text
+            && !sys.is_empty()
+        {
+            prompt_parts.push(format!("<system>\n{sys}\n</system>"));
         }
         prompt_parts.push(messages_to_prompt(&request.messages));
         let prompt = prompt_parts.join("\n\n");
